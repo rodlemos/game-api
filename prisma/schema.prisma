@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Champions {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  image_url String
+  abilities String[]
+  guides    Guides[]
+  role      Roles[]
+
+  @@map("champions")
+}
+
+model Roles {
+  id        String      @id @default(uuid())
+  name      String
+  image_url String
+  tutorials Tutorials[]
+  guides    Guides[]
+  champions Champions[]
+
+  @@map("roles")
+}
+
+model Items {
+  id        String          @id @default(uuid())
+  name      String          @unique
+  image_url String
+  guides    ItemsOnGuides[]
+
+  @@map("items")
+}
+
+model Guides {
+  id          String          @id @default(uuid())
+  title       String
+  slug        String          @unique
+  id_champion String?
+  champion    Champions?      @relation(fields: [id_champion], references: [id])
+  id_role     String?
+  role        Roles?          @relation(fields: [id_role], references: [id])
+  items       ItemsOnGuides[]
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @default(now()) @updatedAt
+
+  @@map("guides")
+}
+
+model ItemsOnGuides {
+  id        String  @id @default(uuid())
+  id_items  String?
+  item      Items?  @relation(fields: [id_items], references: [id], onDelete: Cascade)
+  id_guides String?
+  guide     Guides? @relation(fields: [id_guides], references: [id], onDelete: Cascade)
+  slot      Int
+}
+
+model Tutorials {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  description String
+  video_id    String
+  id_role     String?
+  role        Roles?   @relation(fields: [id_role], references: [id])
+  created_at  DateTime @default(now())
+
+  @@map("tutorials")
+}
